@@ -5,30 +5,41 @@ public class MainActivity extends Activity{
  String[] isoNames={"AUTO","100","200","400","800","1600","3200"};int[] isoVals={0,100,200,400,800,1600,3200};long[] shutters={4166667L,8333333L,16666667L,33333333L,66666667L};String[] shutterNames={"1/240","1/120","1/60","1/30","1/15"};
  public void onCreate(Bundle b){super.onCreate(b);getWindow().addFlags(128);ui();cm=(CameraManager)getSystemService(CAMERA_SERVICE);if(checkSelfPermission(Manifest.permission.CAMERA)!=0||checkSelfPermission(Manifest.permission.RECORD_AUDIO)!=0)requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO},8);else thread();}
  void ui(){
- getWindow().setStatusBarColor(Color.BLACK);getWindow().setNavigationBarColor(Color.BLACK);
- LinearLayout root=new LinearLayout(this);root.setBackgroundColor(0xff05080d);root.setOrientation(0);
- FrameLayout previewFrame=new FrameLayout(this);root.addView(previewFrame,new LinearLayout.LayoutParams(0,-1,1));
+ getWindow().setStatusBarColor(0xff05070a);getWindow().setNavigationBarColor(0xff05070a);
+ LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(0xff05070a);
+ LinearLayout top=new LinearLayout(this);top.setOrientation(0);root.addView(top,new LinearLayout.LayoutParams(-1,0,1.05f));
+ FrameLayout previewFrame=new FrameLayout(this);top.addView(previewFrame,new LinearLayout.LayoutParams(0,-1,1));
  view=new TextureView(this);previewFrame.addView(view,new FrameLayout.LayoutParams(-1,-1));
- LinearLayout hud=new LinearLayout(this);hud.setOrientation(0);hud.setGravity(Gravity.CENTER_VERTICAL);hud.setPadding(12,8,12,8);hud.setBackgroundColor(0xaa07111d);
- FrameLayout.LayoutParams hp=new FrameLayout.LayoutParams(-1,52,Gravity.TOP);previewFrame.addView(hud,hp);
- String[] top={"LENS  77mm","FPS  30","SHUTTER  1/120","IRIS  f2.8","ISO  800","WB  5600K","4K  •  97%"};
- for(String v:top){TextView t=new TextView(this);t.setText(v);t.setTextColor(0xffe8f4ff);t.setTextSize(10);t.setGravity(Gravity.CENTER);t.setPadding(7,0,7,0);hud.addView(t,new LinearLayout.LayoutParams(0,-1,1));}
- LinearLayout meterRow=new LinearLayout(this);meterRow.setGravity(Gravity.CENTER_VERTICAL);meterRow.setPadding(10,5,10,5);meterRow.setBackgroundColor(0xaa101820);
- TextView hist=new TextView(this);hist.setText("RGB  ▂▃▆▇▅▃▂");hist.setTextColor(0xff55b9ff);hist.setTextSize(13);meterRow.addView(hist,new LinearLayout.LayoutParams(0,42,1));
- TextView audio=new TextView(this);audio.setText("▰▰▰▰▰▰▱▱  AUDIO");audio.setTextColor(0xff65e59a);audio.setTextSize(10);audio.setGravity(Gravity.CENTER);meterRow.addView(audio,new LinearLayout.LayoutParams(0,42,1));
- FrameLayout.LayoutParams mp=new FrameLayout.LayoutParams(-1,52,Gravity.BOTTOM);mp.setMargins(10,0,10,10);previewFrame.addView(meterRow,mp);
- LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(12,10,12,10);panel.setBackgroundColor(0xff111820);root.addView(panel,new LinearLayout.LayoutParams(292,-1));
- ImageView logo=new ImageView(this);logo.setImageResource(com.cmcam.pro.R.drawable.cm_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);LinearLayout.LayoutParams lpLogo=new LinearLayout.LayoutParams(-1,58);lpLogo.setMargins(0,0,0,2);panel.addView(logo,lpLogo);TextView brand=new TextView(this);brand.setText("CM CAMERA PRO");brand.setTextColor(0xfff4f8ff);brand.setTextSize(14);brand.setTypeface(null,1);brand.setGravity(Gravity.CENTER);panel.addView(brand,new LinearLayout.LayoutParams(-1,24));
- TextView sub=new TextView(this);sub.setText("CINEMA  •  MANUAL CONTROL");sub.setTextColor(0xff54baff);sub.setTextSize(9);sub.setGravity(Gravity.CENTER);panel.addView(sub);
- status=new TextView(this);status.setText("●  CAMERA READY");status.setTextColor(0xff65e59a);status.setTextSize(11);status.setGravity(Gravity.CENTER);status.setPadding(4,8,4,8);panel.addView(status);
- LinearLayout tabs=new LinearLayout(this);tabs.setOrientation(0);tabs.setPadding(0,4,0,8);panel.addView(tabs);
- for(String name:new String[]{"CAMERA","MEDIA","SETTINGS"}){TextView tab=new TextView(this);tab.setText(name);tab.setTextColor(name.equals("CAMERA")?0xff65bdff:0xff9aa8b8);tab.setTextSize(9);tab.setGravity(Gravity.CENTER);tab.setPadding(4,9,4,9);tab.setBackgroundColor(name.equals("CAMERA")?0xff173b59:0xff1b242e);LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,34,1);tp.setMargins(2,0,2,0);tabs.addView(tab,tp);}
- TextView heading=new TextView(this);heading.setText("CAMERA CONTROLS");heading.setTextColor(0xffdce8f5);heading.setTextSize(11);heading.setTypeface(null,1);heading.setPadding(2,7,0,3);panel.addView(heading);
- isoS=sp(panel,"ISO",isoNames);shS=sp(panel,"SHUTTER SPEED",shutterNames);wbS=sp(panel,"WHITE BALANCE",new String[]{"Auto","Daylight","Cloudy","Tungsten","Fluorescent"});fpsS=sp(panel,"FRAME RATE",new String[]{"30 FPS","24 FPS","60 FPS"});resS=sp(panel,"RESOLUTION",new String[]{"1080p","720p"});
- TextView fl=new TextView(this);fl.setText("MANUAL FOCUS");fl.setTextColor(0xffb9c8d8);fl.setTextSize(10);fl.setPadding(2,8,0,0);panel.addView(fl);
- SeekBar fs=new SeekBar(this);fs.setMax(100);fs.setProgress(0);panel.addView(fs);fs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int v,boolean u){focus=v/100f;apply();}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
- rec=new Button(this);rec.setText("●   START RECORDING");rec.setTextColor(Color.WHITE);rec.setTextSize(12);rec.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffc62838));LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,48);rp.setMargins(0,10,0,5);panel.addView(rec,rp);rec.setOnClickListener(v->{if(recording)stopRec();else startRec();});
- TextView foot=new TextView(this);foot.setText("MP4  •  H.264  •  BUILT FOR MOBILE CINEMA");foot.setTextColor(0xff718294);foot.setTextSize(8);foot.setGravity(Gravity.CENTER);panel.addView(foot);
+ LinearLayout hud=new LinearLayout(this);hud.setOrientation(0);hud.setGravity(Gravity.CENTER_VERTICAL);hud.setPadding(7,3,7,3);hud.setBackgroundColor(0xaa07111b);
+ previewFrame.addView(hud,new FrameLayout.LayoutParams(-1,42,Gravity.TOP));
+ String[] labels={"LENS\\n77mm","FPS\\n30","SHUTTER\\n1/120","IRIS\\nf2.8","ISO\\n800","WB\\n5600K","TINT\\n-10","4K"};
+ for(String v:labels){TextView t=new TextView(this);t.setText(v);t.setTextColor(0xfff1f5fa);t.setTextSize(9);t.setGravity(Gravity.CENTER);t.setTypeface(null,1);t.setPadding(3,0,3,0);hud.addView(t,new LinearLayout.LayoutParams(0,-1,1));}
+ TextView tc=new TextView(this);tc.setText("00:00:00:00");tc.setTextColor(0xffffffff);tc.setTextSize(17);tc.setGravity(Gravity.CENTER);hud.addView(tc,new LinearLayout.LayoutParams(0,-1,1.25f));
+ LinearLayout overlays=new LinearLayout(this);overlays.setOrientation(0);overlays.setGravity(Gravity.CENTER_VERTICAL);overlays.setPadding(8,4,8,4);
+ TextView hist=new TextView(this);hist.setText("RGB  ▂▃▆▇▅▃▂");hist.setTextColor(0xff58aaff);hist.setTextSize(11);hist.setBackgroundColor(0xaa101820);hist.setPadding(8,8,8,8);overlays.addView(hist);
+ TextView audio=new TextView(this);audio.setText("▰▰▰▰▰▰▱▱  AUDIO");audio.setTextColor(0xff65e59a);audio.setTextSize(10);audio.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);audio.setBackgroundColor(0xaa101820);audio.setPadding(8,8,8,8);LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(0,36,1);ap.setMargins(8,0,0,0);overlays.addView(audio,ap);
+ previewFrame.addView(overlays,new FrameLayout.LayoutParams(-1,48,Gravity.BOTTOM));
+ LinearLayout camRail=new LinearLayout(this);camRail.setOrientation(1);camRail.setGravity(Gravity.CENTER);camRail.setPadding(3,3,3,3);camRail.setBackgroundColor(0xff080d14);top.addView(camRail,new LinearLayout.LayoutParams(54,-1));
+ String[] cameraTools={"▣","◎","◈","REC","◉","⌕","▤"};
+ for(String symbol:cameraTools){TextView b=new TextView(this);b.setText(symbol);b.setTextSize(symbol.equals("REC")?9:19);b.setTextColor(symbol.equals("REC")?0xffff626c:0xffdce6f2);b.setGravity(Gravity.CENTER);if(symbol.equals("REC")){b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffa51f2c));}camRail.addView(b,new LinearLayout.LayoutParams(-1,0,1));if(symbol.equals("REC")){b.setOnClickListener(v->{if(recording)stopRec();else startRec();});}}
+ LinearLayout bottom=new LinearLayout(this);bottom.setOrientation(0);root.addView(bottom,new LinearLayout.LayoutParams(-1,0,0.95f));
+ LinearLayout menu=new LinearLayout(this);menu.setOrientation(1);menu.setPadding(0,4,0,4);menu.setBackgroundColor(0xff17191d);bottom.addView(menu,new LinearLayout.LayoutParams(142,-1));
+ TextView st=new TextView(this);st.setText("Settings");st.setTextColor(0xfff4f5f7);st.setTextSize(16);st.setTypeface(null,1);st.setPadding(12,4,4,8);menu.addView(st);
+ String[] sections={"Record","Camera","Audio","Monitor","Media","LUTs","Presets"};
+ for(int i=0;i<sections.length;i++){TextView item=new TextView(this);item.setText(sections[i]);item.setTextSize(11);item.setTextColor(i==0?0xffffffff:0xffd1d5da);item.setGravity(Gravity.CENTER_VERTICAL);item.setPadding(12,0,4,0);item.setBackgroundColor(i==0?0xff278fe5:0xff17191d);menu.addView(item,new LinearLayout.LayoutParams(-1,0,1));}
+ LinearLayout settings=new LinearLayout(this);settings.setOrientation(1);settings.setPadding(10,4,10,4);settings.setBackgroundColor(0xff050607);bottom.addView(settings,new LinearLayout.LayoutParams(0,-1,1));
+ TextView recTitle=new TextView(this);recTitle.setText("Record");recTitle.setTextColor(0xfff0f2f5);recTitle.setTextSize(12);recTitle.setGravity(Gravity.CENTER);settings.addView(recTitle,new LinearLayout.LayoutParams(-1,24));
+ ScrollView scroll=new ScrollView(this);settings.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));LinearLayout controls=new LinearLayout(this);controls.setOrientation(1);controls.setPadding(2,4,2,4);scroll.addView(controls);
+ TextView codec=new TextView(this);codec.setText("Codec                                      H.264  ›");codec.setTextColor(0xffd6d9de);codec.setTextSize(11);codec.setPadding(12,10,8,10);codec.setBackgroundColor(0xff1b1d20);controls.addView(codec);
+ resS=sp(controls,"RESOLUTION",new String[]{"1080p","720p"});fpsS=sp(controls,"FRAME RATE",new String[]{"30 FPS","24 FPS","60 FPS"});
+ isoS=sp(controls,"ISO",isoNames);shS=sp(controls,"SHUTTER SPEED",shutterNames);wbS=sp(controls,"WHITE BALANCE",new String[]{"Auto","Daylight","Cloudy","Tungsten","Fluorescent"});
+ TextView focusLabel=new TextView(this);focusLabel.setText("Manual Focus");focusLabel.setTextColor(0xffd6d9de);focusLabel.setTextSize(11);focusLabel.setPadding(10,8,0,0);controls.addView(focusLabel);
+ SeekBar fs=new SeekBar(this);fs.setMax(100);fs.setProgress(0);controls.addView(fs);fs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int v,boolean u){focus=v/100f;apply();}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+ rec=new Button(this);rec.setText("●  START RECORDING");rec.setTextColor(Color.WHITE);rec.setTextSize(11);rec.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffc62838));controls.addView(rec,new LinearLayout.LayoutParams(-1,42));rec.setOnClickListener(v->{if(recording)stopRec();else startRec();});
+ TextView hint=new TextView(this);hint.setText("COLOR SPACE  •  AUDIO  •  MONITOR");hint.setTextColor(0xff8e969f);hint.setTextSize(9);hint.setGravity(Gravity.CENTER);controls.addView(hint);
+ LinearLayout nav=new LinearLayout(this);nav.setOrientation(1);nav.setGravity(Gravity.CENTER);nav.setPadding(2,3,2,3);nav.setBackgroundColor(0xff090d13);bottom.addView(nav,new LinearLayout.LayoutParams(54,-1));
+ String[] navs={"▣\\nCamera","▤\\nMedia","☷\\nChat","⚙\\nSettings"};
+ for(String n:navs){TextView b=new TextView(this);b.setText(n);b.setTextColor(n.startsWith("▣")?0xff61b9ff:0xffd4dce6);b.setTextSize(10);b.setGravity(Gravity.CENTER);nav.addView(b,new LinearLayout.LayoutParams(-1,0,1));}
  setContentView(root);view.setSurfaceTextureListener(new TextureView.SurfaceTextureListener(){public void onSurfaceTextureAvailable(SurfaceTexture s,int w,int h){open();}public void onSurfaceTextureSizeChanged(SurfaceTexture s,int w,int h){}public boolean onSurfaceTextureDestroyed(SurfaceTexture s){return true;}public void onSurfaceTextureUpdated(SurfaceTexture s){}});
  }
  interface Pick{void go(int v);}AdapterView.OnItemSelectedListener listener(Pick x){return new AdapterView.OnItemSelectedListener(){public void onItemSelected(AdapterView<?>a,View v,int n,long l){x.go(n);}public void onNothingSelected(AdapterView<?>a){}};}
